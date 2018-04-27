@@ -9,8 +9,21 @@
 \begin{tikzpicture}
 	\draw[step=2cm,gray,very thin] (0,0) grid (8,8);
 	
-	\draw[thick] (0,8) -- (0,6) -- (6,6) -- (6,8) -- cycle node[anchor=north west] {24 $\times$};
-	\draw[thick] (6,8) -- (6,6) -- (4,6) -- (4,4) -- (8,4) -- (8,8) -- cycle node[anchor=north west] {6 +}; 
+	\draw[thick] (0,8) -- (0,6);
+	\draw[thick] (0,6) -- (2,6);
+	\draw[thick] (2,6) -- (4,6);
+	\draw[thick] (4,6) -- (6,6);
+	\draw[thick] (6,6) -- (6,8); 
+	\draw[thick] (6,8) -- (4,8);
+	\draw[thick] (4,8) -- (2,8);
+	\draw[thick] (2,8) -- (0,8) node[anchor=north west] {24 $\times$};
+	
+	\draw[thick] (6,6) -- (4,6);
+	\draw[thick] (4,6) -- (4,4);
+	\draw[thick] (4,4) -- (8,4);
+	\draw[thick] (8,4) -- (8,8);
+	\draw[thick] (8,8) -- (6,8) node[anchor=north west] {6 +}; 
+	
 	\draw[thick] (0,6) -- (0,4) -- (2,4) -- (2,2) -- (4,2) -- (4,6) -- cycle node[anchor=north west] {9 +};
 	\draw[thick] (0,4) -- (0,0) -- (2,0) -- (2,4) -- cycle node[anchor=north west] {2 --};
 	\draw[thick] (4,4) -- (4,2) -- (6,2) -- (6,4) -- cycle node[anchor=north west] {2};

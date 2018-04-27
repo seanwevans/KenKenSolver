@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from itertools import permutations, product
 from functools import reduce
-from random import choices
+from random import choice
 
 # Loop through two lists of equal length and return True
 # if no two elements match exactly in index and value.
@@ -11,7 +11,6 @@ def none_match(m1, m2):
 	for i in range(len(m1)):
 		if m1[i] == m2[i]:	
 			return False
-
 	return True
 	
 # Main Ken Ken Board Class
@@ -20,18 +19,18 @@ class KenKen(object):
 	def __init__(self, board):
 		self.board = board
 		self.size = self.find_size()
-	
-	# Assumes a square board, returns maximum board dimension
+		
 	def find_size(self):
+		# Assumes a square board, returns maximum board dimension
 		m = 0
 		for k in self.board:
 			for (x,y) in self.board[k][2]:
 				if x > m:	m = x
 				if y > m:	m = y
 		return(m)
-	
-	# Prints board showing id
+		
 	def print_board(self):
+	# Prints board showing id
 		for row in range(1, self.size+1):
 			for col in range(1, self.size+1):
 				for k in self.board:
@@ -40,15 +39,14 @@ class KenKen(object):
 						break
 			print()
 	
-	# Given a position on the board return appropriate id
 	def get_id_from_pos(self, i, j):
-			for id in self.board:
-				if (j,i) in self.board[id][2]:
-					return id
+		# Given a position on the board return appropriate id
+		for id in self.board:
+			if (j,i) in self.board[id][2]:
+				return id
 					
-	# Prints board showing target numbers and operations
 	def print_board2(self):
-		
+		# Prints board showing target numbers and operations
 		border = "-" * (3 * self.size + 1)
 				
 		for i in range(1,self.size+1):
@@ -68,8 +66,8 @@ class KenKen(object):
 		
 		print(border)
 	
-	# Return True if the list of answers conforms to the operation id.
 	def check_id(self, id, answers):
+		# Return True if the list of answers conforms to the operation id.
 		op = self.board[id][0]
 		target = self.board[id][1]
 		
@@ -100,8 +98,8 @@ class KenKen(object):
 			if answers[0] == target:	return True
 			else:	return False
 	
-	# Checks entire board to make sure calculations are valid
 	def check_board(self, answers):
+		# Checks entire board to make sure calculations are valid
 		for id in self.board:
 			ans = []
 			for (x,y) in self.board[id][2]:
@@ -109,7 +107,6 @@ class KenKen(object):
 			if(not self.check_id(id, ans)):	return False
 		return(True)
 		
-	#
 	def check_valid_answer(self, answers):
 		valid = [j for j in range(1, self.size+1)]
 		for i in answers:
@@ -118,8 +115,8 @@ class KenKen(object):
 			if sorted([x[i] for x in answers]) != valid:	return False
 		return True
 	
-	# Brute force check every permutationsutation to solve puzzle
-	def dumb_four_square_solve(self):
+	def solve(self):
+		# Brute force check every permutationsutation to solve puzzle
 		# Only for four squares
 		sols = [i for i in permutations(range(1,self.size+1),self.size)]
 			
@@ -131,86 +128,86 @@ class KenKen(object):
 						if(self.check_board(att_sol)):
 							return(att_sol)
 	
-	# Transforms from board coordinates to tikz coordinates
-	def box_coords(self, board_coords):
-		(x,y) = board_coords
+	def box_coords(self, coordinate):
+		# Calculate tikz coordinates for a box around one local coordinate
+		(x,y) = coordinate
 		p = 2 * (x - 1)
 		q = 2 * (5 - y)
-		return([(p,q), (p,q-2), (p-2,q-2), (p-2,q), (p,q)])
+		return([[(p,q), (p,q-2)], [(p,q-2),(p+2,q-2)], [(p+2,q-2),(p+2,q)], [(p+2,q),(p,q)]])
 	
-	# Generates pdfLaTeX source for puzzle
+	def tikz_coords(self, id):
+		# draw a box around the ids
+		coordinates = self.board[id][2]
+		t_coords = []
+		for c in coordinates:
+			# c = (1,1)
+			b = self.box_coords(c)
+			# b =  [[(0,8),(0,6)],[(0,6),(2,6)],[(2,6),(2,8)],[(2,8),(0,8)]]
+			for d in b:
+				# d = [(0,8),(0,6)]
+				if d in t_coords or d[::-1] in t_coords:
+					try:
+						t_coords.remove(d)	
+					except:
+						t_coords.remove(d[::-1])
+				else:
+					t_coords.append(d)
+		outstr = ""
+		
+		return(t_coords)
+	
 	def gen_latex(self, solve=True):
-		head = """
-		\\documentclass{article}
-		\\usepackage{tikz}
-		\\pagenumbering{gobble}
-		\\begin{document}
-		\\begin{tikzpicture}
-		\\draw[step=2cm,gray,very thin] (0,0) grid (8,8);
-		"""
+		# Generates pdfLaTeX source for puzzle
+		head =\
+"""\\documentclass{article}
+
+\\usepackage{tikz}
+
+\\pagenumbering{gobble}
+
+\\begin{document}
+
+\\begin{tikzpicture}
+	
+	% The Grid
+	\\draw[step=2cm,gray,very thin] (0,0) grid (8,8);
+
+"""
 		
 		body = 	""
 		
-		tail = """
-		\\end{tikzpicture}
-		\\end{document}
-		"""
+		tail =\
+"""
+\\end{tikzpicture}
+
+\\end{document}
+"""
 		
-		# draw a box around the ids
-		def tikz_coords(id):
-			
-			s = ""
-			coords = self.board[id][2]
-			
-			
-			
-			
-			
-			
-			
-			
-			# For a single space
-			if len(coords) == 1:
-				t_coords = self.box_coords(coords[0])
-			else:
-				return("(0,8) -- (0,6) -- (6,6) -- (6,8)")
-					
-			# For more than one space
-			pass
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			for t in t_coords:
-				s += str(t) + " -- "
-			s = s[:-4]
-			
-			return(s)
-			# [(1,1), (1,2), (2,1)]
-			# [(0,8), (0,6), (0,4), (2,4), (2,6), (4,6), (4,8), (2,8), (0,8)]
-			#return("(0,8) -- (0,6) -- (6,6) -- (6,8)")
+		op_dict = { "-":"--", "*":"$\\times$", "/":"$\\div$", " ":" ", "+":"+" }
 		
 		for id in self.board:
-			body += "\\draw[thick] "
-			body += tikz_coords(id)
-			body += " -- cycle node[anchor=north west] {"
-			op = self.board[id][0]
-			if op == "-":	op = "--"
-			if op == "*":	op = "$\\times$"
-			if op == "/":	op = "$\\div$"
-			body += str(self.board[id][1]) + " " + op + "};\n"
-
+			
+			coords = self.tikz_coords(id)
+			first_t = coords[0]
+			body += "\t% id: " + str(id) + "\n"
+			for t in coords:
+				body += "\t\\draw[thick] "
+				body += str(t[0]) + " -- " + str(t[1])
+				if t[1] == first_t[0]:
+					op = self.board[id][0]
+					body += " node[anchor=north west] {"					
+					body += str(self.board[id][1]) + " " + op_dict[op] + "};\n"
+				else:
+					body += ";\n"
+			body += "\n"
+					
 		if solve:
-			solved = self.dumb_four_square_solve()
+			body += "\t% Solution\n"
+			solved = self.solve()
 	
 			for row in range(self.size):
 				for col in range(self.size):
-					body += "\\draw (" + \
+					body += "\t\\draw (" + \
 							str(2*col+1) + "," + str(6-2*row+1) + \
 							") node[anchor=center] {\\Huge " + \
 							str(solved[row][col]) + "};\n"
@@ -218,30 +215,4 @@ class KenKen(object):
 		return(head + body + tail)
 		
 if __name__ == "__main__":	
-
-	# { id:[operation, target number, position list: [(col, row)]] }	
-	kenkendef = 	{	1:['*',	12,	[(1,1),(2,1),(1,2)]	], 
-						2:['-',	1,	[(3,1),(3,2)]		], 
-						3:[' ',	4,	[(4,1)]				], 
-						4:['+',	9,	[(2,2),(2,3),(3,3)]	], 
-						5:['/',	2,	[(4,2),(4,3)]		], 
-						6:['+',	7,	[(1,3),(1,4),(2,4)]	], 
-						7:['-',	2,	[(3,4),(4,4)]		]
-					}
-	
-	kenkendefans = ((3,1,2,4),(4,2,3,1),(1,3,4,2),(2,4,1,3))
-	
-	kk2 = 			{	1:['*', 24, [(1,1),(2,1),(3,1)]	],
-						2:['+', 6, 	[(4,1),(3,2),(4,2)]	],
-						3:['+', 9, 	[(1,2),(2,2),(2,3)]	],
-						4:['-', 2, 	[(1,3),(1,4)]		],
-						5:[' ', 2, 	[(3,3)]				],
-						6:['-', 1, 	[(4,3),(4,4)]		],
-						7:['/', 2,	[(2,4),(3,4)]		]
-					}
-	
-	kk2ans = ((2,3,4,1),(4,1,3,2),(1,4,2,3),(3,2,1,4))
-	
-	k2 = KenKen(kk2)
-	
-	print(k2.gen_latex())
+	import test
